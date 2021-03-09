@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../../app');
+const app = require('../app');
 
 describe('Poetry API', () => {
     test('Upload file and receive hash from API', async () => {
