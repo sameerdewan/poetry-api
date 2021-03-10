@@ -3,8 +3,10 @@ const fileUpload = require('express-fileupload');
 const crypto = require('crypto');
 const fs = require('fs');
 const util = require('util');
+const PoetrySystemJWT = require('../jwt');
 
 const readFile = util.promisify(fs.readFile);
+const poetryJWT = new PoetrySystemJWT();
 
 router.use(fileUpload({
     useTempFiles : true,
