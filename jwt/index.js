@@ -5,8 +5,8 @@ const path = require('path');
 class PoetrySystemJWT {
     constructor() {
         if (process.env.ENV === 'DEVELOPMENT') {
-            this.privateKey = fs.readFileSync(path.resolve(__dirname, '../development/keys/private.key'));
-            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../development/keys/public.key'));
+            this.privateKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/private.key'));
+            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/public.key'));
         }
         this.settings = {
             algorithm: 'HS256',
@@ -26,8 +26,8 @@ class PoetrySystemJWT {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         try {
-            const decoded = this.verifyToken(token);
-            req.jwt = decoded;
+            const user = this.verifyToken(token);
+            req.user = user;
         } catch (error) {
             res.status(403).json({ error: error.message });
         }
@@ -36,3 +36,4 @@ class PoetrySystemJWT {
 }
 
 module.exports = PoetrySystemJWT;
+ 
