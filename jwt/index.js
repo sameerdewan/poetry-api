@@ -26,8 +26,7 @@ class PoetrySystemJWT {
         const authHeader = req.headers['authorization'];
         const token = authHeader && authHeader.split(' ')[1];
         try {
-            const user = this.verifyToken(token);
-            req.user = user;
+            req.jwt = this.verifyToken(token);
         } catch (error) {
             res.status(403).json({ error: error.message });
         }
