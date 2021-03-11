@@ -30,6 +30,10 @@ const userSchema = new mongoose.Schema({
     credit: {
         type: mongoose.SchemaTypes.Number,
         default: 0
+    },
+    customerId: {
+        type: mongoose.SchemaTypes.String,
+        default: null
     }
 });
 
