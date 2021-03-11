@@ -26,14 +26,6 @@ const userSchema = new mongoose.Schema({
     validationCode: {
         type: mongoose.SchemaTypes.String,
         required: true
-    },
-    credit: {
-        type: mongoose.SchemaTypes.Number,
-        default: 0
-    },
-    customerId: {
-        type: mongoose.SchemaTypes.String,
-        default: null
     }
 });
 
