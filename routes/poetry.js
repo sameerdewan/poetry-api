@@ -1,9 +1,12 @@
 const router = require('express').Router();
 const fileUpload = require('express-fileupload');
+const axios = require('axios').default;
 const crypto = require('crypto');
 const fs = require('fs');
 const util = require('util');
+const assert = require('assert').strict;
 const PoetrySystemJWT = require('../jwt');
+const User = require('../db/models/User');
 const HashRecord = require('../db/models/HashRecord');
 
 const readFile = util.promisify(fs.readFile);
@@ -13,6 +16,28 @@ router.use(fileUpload({
     useTempFiles : true,
     tempFileDir : '/tmp/'
 }));
+
+router.post('/', poetryJWT.middleware, async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.jwt.username }).exec();
+        assert.notDeepEqual(user.validated, false, 'User is not validated');
+        assert.notDeepEqual(user.customerId, null, 'User does not have a customerId');
+        assert.notDeepEqual(user.subscription, null, 'User does not have an active subscription');
+        assert.notDeepEqual(user.subscriptionId, null, 'User does not have an active subscription id');
+        const response = await axios.get(`${process.env.POETRY_PAYMENTS_URL}/products/${user.subscription}`);
+        const { maxRequests } = response.data;
+        assert.notDeepEqual(maxRequests >= true, true, 'User has hit their request quota');
+        const file = req.files.useTempFiles;
+        const data = await readFile(file);
+        const hash = crypto.createHash('sha256');
+        hash.setEncoding('hex');
+        hash.update(data);
+        hash.end();
+        const hashedData = hash.read();
+    } catch (error) {
+
+    }
+});
 
 router.post('/', poetryJWT.middleware, async (req, res) => {
     try {
