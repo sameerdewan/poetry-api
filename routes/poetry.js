@@ -47,6 +47,7 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
         hash.update(data);
         hash.end();
         const hashedData = hash.read();
+        
     } catch (error) {
 
     }
