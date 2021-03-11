@@ -12,17 +12,20 @@ const hashRecordSchema = new mongoose.Schema({
     },
     tx: {
         type: mongoose.SchemaTypes.String,
-        required: true,
         unique: true
     },
     contract: {
         type: mongoose.SchemaTypes.String,
-        required: true
     },
     network: {
         type: mongoose.SchemaTypes.String,
         default: 'matic',
         enum: ['matic']
+    },
+    status: {
+        type: mongoose.SchemaTypes.String,
+        default: 'in progress',
+        enum: ['in progress', 'failed', 'done']
     },
     date: {
         type: mongoose.SchemaTypes.Date,

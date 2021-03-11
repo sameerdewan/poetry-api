@@ -23,11 +23,14 @@ function getContractData() {
 
 const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider(process.env.PROVIDER));
-const poetryContract = new web3.eth.Contract(getContractData());
+const { abi, address } = getContractData();
+const poetryContract = web3.eth.contract(abi).at(address)
 
 router.use(fileUpload({
     useTempFiles : true,
-    tempFileDir : '/tmp/'
+    tempFileDir : '/tmp/',
+    limits: { filesize: 20480 * 25600 }, // 500mb
+    parseNested: false
 }));
 
 router.post('/', poetryJWT.middleware, async (req, res) => {
@@ -47,7 +50,15 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
         hash.update(data);
         hash.end();
         const hashedData = hash.read();
-        
+        const hashRecord = new HashRecord({
+            username: req.jwt.username,
+            hash: hashedData,
+            contact: address,
+            network: 'matic',
+            fileName: req.files.file.name
+        });
+        await hashRecord.save();
+        res.status(200).json({ hashRecord });
     } catch (error) {
 
     }
