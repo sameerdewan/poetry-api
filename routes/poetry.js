@@ -12,6 +12,19 @@ const HashRecord = require('../db/models/HashRecord');
 const readFile = util.promisify(fs.readFile);
 const poetryJWT = new PoetrySystemJWT();
 
+function getContractData() {
+    if (process.env.ENV === 'DEVELOPMENT') {
+        const { abi, address } = require(path.resolve(__dirname, '../../../../../appdata/contractData.json'));
+        return { abi, address };
+    } 
+    else if (process.env.ENV === 'PRODUCTION') { } 
+    else { throw new Error('environment not configured properly') }
+}
+
+const Web3 = require('web3');
+const web3 = new Web3(new Web3.providers.HttpProvider(process.env.PROVIDER));
+const poetryContract = new web3.eth.Contract(getContractData());
+
 router.use(fileUpload({
     useTempFiles : true,
     tempFileDir : '/tmp/'
