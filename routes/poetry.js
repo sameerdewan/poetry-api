@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const fileUpload = require('express-fileupload');
 const axios = require('axios').default;
+const Web3 = require('web3');
+const Tx = require('ethereumjs-tx').Transaction;
 const crypto = require('crypto');
 const fs = require('fs');
 const util = require('util');
@@ -21,10 +23,9 @@ function getContractData() {
     else { throw new Error('environment not configured properly') }
 }
 
-const Web3 = require('web3');
 const web3 = new Web3(new Web3.providers.HttpProvider(process.env.PROVIDER));
 const { abi, address } = getContractData();
-const poetryContract = web3.eth.contract(abi).at(address)
+const poetryContract = web3.eth.contract(abi).at(address);
 
 router.use(fileUpload({
     useTempFiles : true,
@@ -54,7 +55,7 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
             username: req.jwt.username,
             hash: hashedData,
             contact: address,
-            network: 'matic',
+            network: req.body.network,
             fileName: req.files.file.name
         });
         await hashRecord.save();
