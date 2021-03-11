@@ -3,7 +3,7 @@ FROM node:14
 # Create app directory
 WORKDIR /usr/src/app
 
-ENV PORT=8080
+ENV PORT=4000
 
 # Install app dependencies
 # A wildcard is used to ensure both package.json AND package-lock.json are copied
@@ -17,5 +17,5 @@ RUN npm install
 # Bundle app source
 COPY . .
 
-EXPOSE 8080
+EXPOSE 4000
 CMD [ "npm", "start" ]
