@@ -26,6 +26,23 @@ const userSchema = new mongoose.Schema({
     validationCode: {
         type: mongoose.SchemaTypes.String,
         required: true
+    },
+    customerId: {
+        type: mongoose.SchemaTypes.String,
+        default: null
+    },
+    subscription: {
+        type: mongoose.SchemaTypes.String,
+        enum: [null, 'Basic', 'Professional', 'Business', 'Unlimited'],
+        default: null
+    },
+    subscriptionId: {
+        type: mongoose.SchemaTypes.String,
+        default: null
+    },
+    monthToDatePings: {
+        type: mongoose.SchemaTypes.Number,
+        default: 0
     }
 });
 
