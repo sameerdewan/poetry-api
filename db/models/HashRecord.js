@@ -21,8 +21,8 @@ const hashRecordSchema = new mongoose.Schema({
     },
     network: {
         type: mongoose.SchemaTypes.String,
-        required: true,
-        enum: ['ethereum', 'matic']
+        default: 'matic',
+        enum: ['matic']
     },
     date: {
         type: mongoose.SchemaTypes.Date,
