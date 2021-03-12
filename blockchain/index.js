@@ -24,13 +24,13 @@ async function poetryPersist({ username, fileName, hashedData }) {
     if (process.env.ENV === 'DEVELOPMENT') {
         gasPrice = await web3.eth.getGasPrice();
         gasLimit = process.env.GAS_LIMIT;
-    }
-    else if (process.env.ENV === 'PRODUCTION') {
+    } else if (process.env.ENV === 'PRODUCTION') {
         gasPrice = await matic();
         const block = await web3.eth.getBlock('latest');
         gasLimit = block.gasLimit / block.transactions.length;
+    } else {
+        throw new Error('environment not configured properly');
     }
-    else { throw new Error('environment not configured properly') }
     const encodedABI = poetryContract.methods.compose(username, fileName, hashedData).encodeABI();
     const from = await wallet.getAddress();
     const nonce = await web3.eth.getTransactionCount(from);
@@ -44,9 +44,17 @@ async function poetryPersist({ username, fileName, hashedData }) {
     };
     const signedTx = await wallet.signTransaction(tx);
     web3.eth.sendSignedTransaction(signedTx)
-    // .on('error', console.log)
+    .on('error', async (error) => {
+        await HashRecord.findOneAndUpdate(
+            { username, fileName, hash: hashedData },
+            { $set: { status: 'failed', message: JSON.stringify(error, null, 2) } }
+        ).exec();
+    })
     .on('receipt', async (receipt) => {
-        await HashRecord.findOneAndUpdate()
+        await HashRecord.findOneAndUpdate(
+            { username, fileName, hash: hashedData },
+            { $set: { status: 'done', tx: receipt.transactionHash } }
+        ).exec();
     });
 }
 

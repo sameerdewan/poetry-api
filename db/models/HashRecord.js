@@ -27,6 +27,9 @@ const hashRecordSchema = new mongoose.Schema({
         default: 'in progress',
         enum: ['in progress', 'failed', 'done']
     },
+    message: {
+        type: mongoose.SchemaTypes.string
+    },
     date: {
         type: mongoose.SchemaTypes.Date,
         default: (() => {
