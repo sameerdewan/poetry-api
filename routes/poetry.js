@@ -1,6 +1,7 @@
 const router = require('express').Router();
 const fileUpload = require('express-fileupload');
 const axios = require('axios').default;
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 const crypto = require('crypto');
 const fs = require('fs');
 const util = require('util');
@@ -23,13 +24,18 @@ router.use(fileUpload({
 router.post('/', poetryJWT.middleware, async (req, res) => {
     try {
         const user = await User.findOne({ username: req.jwt.username }).exec();
+        if (!user) {
+            res.sendStatus(404);
+        }
         assert.notDeepEqual(user.validated, false, 'User is not validated');
         assert.notDeepEqual(user.customerId, null, 'User does not have a customerId');
         assert.notDeepEqual(user.subscription, null, 'User does not have an active subscription');
         assert.notDeepEqual(user.subscriptionId, null, 'User does not have an active subscription id');
-        const response = await axios.get(`${process.env.POETRY_PAYMENTS_URL}/products/${user.subscription}`);
-        const { maxRequests } = response.data;
-        assert.notDeepEqual(maxRequests >= true, true, 'User has hit their request quota');
+        const stripeSubscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+        const productId = stripeSubscription.items.data[0].price.product;
+        const stripeProduct = await stripe.products.retrieve(productId);
+        const { maxRequests } = Number(stripeProduct.metaData);
+        assert.notDeepEqual(user.monthToDatePings < maxRequests, true, `User has reached monthly ping limit: ${maxRequests}`);
         const file = req.files.file.tempFilePath;
         const data = await readFile(file);
         const hash = crypto.createHash('sha256');
