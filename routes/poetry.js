@@ -67,7 +67,7 @@ router.post('/', async (req, res) => {
         hash.setEncoding('hex');
         hash.update(data);
         hash.end();
-        // const hashedData = hash.read();
+        const hashedData = hash.read();
         // const hashRecord = new HashRecord({
         //     username: req.jwt.username,
         //     hash: hashedData,
@@ -76,8 +76,12 @@ router.post('/', async (req, res) => {
         //     fileName: req.files.file.name
         // });
         // await hashRecord.save();
-        res.status(200).json({ hash: hash.read() });
-        poetryPersist({ username: 'sameerdewan', fileName: req.files.file.name, hashedData: hash.read() });
+        res.status(200).json({ hash: hashedData });
+        poetryPersist({
+            username: 'sameerdewan',
+            fileName: req.files.file.name,
+            hashedData: new String(hashedData).valueOf() 
+        });
     } catch (error) {
         res.send({error});
     }
