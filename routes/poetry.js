@@ -66,6 +66,12 @@ router.post('/retrieve', async (req, res) => {
         hash.end();
         const hashRecord = await HashRecord.findOne({ hash: hash.read() }).exec();
         if (!hashRecord) {
+            // update to check on chain if we can't find in DB
+            // if we can, we need to re-persist to ourselves
+            // save the hash, username it belongs to, and the file name
+            // send the found doc to the user PRIOR to all of this correction work by the system - 
+            //      because we already validated it exists on the PoetryContract, work can continue
+            //          post sending in the background.
             return res.status(404).json({ error: 'Hash not found' });
         }
         res.status(200).json({ hashRecord });
