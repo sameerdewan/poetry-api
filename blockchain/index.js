@@ -3,6 +3,7 @@ const Tx = require('ethereumjs-tx').Transaction;
 const ethers = require('ethers').ethers;
 const path = require('path');
 const matic = require('../axios-gas-costs').matic;
+const HashRecord = require('../db/models/HashRecord');
 
 function getContractData() {
     if (process.env.ENV === 'DEVELOPMENT') {
@@ -19,13 +20,16 @@ const poetryContract = new web3.eth.Contract(abi, address);
 const wallet = ethers.Wallet.fromMnemonic(process.env.MNEMONIC);
 
 async function poetryPersist({ username, fileName, hashedData }) {
-    let gasCost;
+    let gasPrice, gasLimit;
     if (process.env.ENV === 'DEVELOPMENT') {
-        gasCost = await web3.eth.getGasPrice();
+        gasPrice = await web3.eth.getGasPrice();
+        gasLimit = process.env.GAS_LIMIT;
     }
     else if (process.env.ENV === 'PRODUCTION') {
-        gasCost = await matic();
-    } 
+        gasPrice = await matic();
+        const block = await web3.eth.getBlock('latest');
+        gasLimit = block.gasLimit / block.transactions.length;
+    }
     else { throw new Error('environment not configured properly') }
     const encodedABI = poetryContract.methods.compose(username, fileName, hashedData).encodeABI();
     const from = await wallet.getAddress();
@@ -33,15 +37,17 @@ async function poetryPersist({ username, fileName, hashedData }) {
     const tx = {
         from,
         to: address,
-        gasLimit: web3.utils.toHex(4712388),
-        gasPrice: web3.utils.toHex(gasCost),
+        gasLimit: web3.utils.toHex(gasLimit),
+        gasPrice: web3.utils.toHex(gasPrice),
         nonce: web3.utils.toHex(nonce),
         data: encodedABI
     };
     const signedTx = await wallet.signTransaction(tx);
     web3.eth.sendSignedTransaction(signedTx)
     // .on('error', console.log)
-    .on('receipt', console.log);
+    .on('receipt', async (receipt) => {
+        await HashRecord.findOneAndUpdate()
+    });
 }
 
 module.exports = {
