@@ -6,7 +6,7 @@ class PoetrySystemJWT {
     constructor() {
         if (process.env.ENV === 'DEVELOPMENT') {
             this.privateKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/private.key'), 'utf8');
-            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/public.pem'), 'utf8');
+            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/public.key'), 'utf8');
         }
         this.signPayloadGetToken = this.signPayloadGetToken.bind(this);
         this.verifyToken = this.verifyToken.bind(this);
