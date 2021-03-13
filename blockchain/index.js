@@ -64,6 +64,46 @@ async function poetryPersist({ username, fileName, hashedData }) {
     }
 }
 
+async function poetryLocate(hash) {
+    try {
+        let gasPrice, gasLimit;
+        if (process.env.ENV === 'DEVELOPMENT') {
+            gasPrice = await web3.eth.getGasPrice();
+            gasLimit = process.env.GAS_LIMIT;
+        } else if (process.env.ENV === 'PRODUCTION') {
+            gasPrice = await matic();
+            const block = await web3.eth.getBlock('latest');
+            gasLimit = block.gasLimit / block.transactions.length;
+        } else {
+            throw new Error('environment not configured properly');
+        }
+        const encodedABI = poetryContract.methods.getRecord(hash).encodeABI();
+        const from = await wallet.getAddress();
+        const nonce = await web3.eth.getTransactionCount(from);
+        const tx = {
+            from,
+            to: address,
+            gasLimit: web3.utils.toHex(gasLimit),
+            gasPrice: web3.utils.toHex(gasPrice),
+            nonce: web3.utils.toHex(nonce),
+            data: encodedABI
+        };
+        const signedTx = await wallet.signTransaction(tx);
+        await new Promise((resolve, reject) => {
+            web3.eth.sendSignedTransaction(signedTx)
+            .on('error', async (error) => {
+                reject(error);
+            })
+            .on('receipt', async (receipt) => {
+                resolve({ tx: receipt.transactionHash });
+            });
+        });
+    } catch (error) {
+        return { error: error.message };
+    }
+}
+
 module.exports = {
-    poetryPersist
+    poetryPersist,
+    poetryLocate
 };

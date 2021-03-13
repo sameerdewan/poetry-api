@@ -8,7 +8,7 @@ const assert = require('assert').strict;
 const PoetrySystemJWT = require('../jwt');
 const User = require('../db/models/User');
 const HashRecord = require('../db/models/HashRecord');
-const { poetryPersist } = require('../blockchain');
+const { poetryPersist, poetryLocate } = require('../blockchain');
 
 const readFile = util.promisify(fs.readFile);
 const poetryJWT = new PoetrySystemJWT();
@@ -69,7 +69,8 @@ router.post('/retrieve', async (req, res) => {
         hash.setEncoding('hex');
         hash.update(data);
         hash.end();
-        const hashRecord = await HashRecord.findOne({ hash: hash.read() }).exec();
+        const hashedData = hash.read();
+        const hashRecord = await HashRecord.findOne({ hash: hashedData }).exec();
         if (!hashRecord) {
             // update to check on chain if we can't find in DB
             // if we can, we need to re-persist to ourselves
@@ -77,9 +78,15 @@ router.post('/retrieve', async (req, res) => {
             // send the found doc to the user PRIOR to all of this correction work by the system - 
             //      because we already validated it exists on the PoetryContract, work can continue
             //          post sending in the background.
-            return res.status(404).json({ error: 'Hash not found' });
+            const response = await poetryLocate(hashedData);
+            const { tx, error } = response;
+            if (error) {
+                return res.status(404).json({ error: 'Hash not found' });
+            } else {
+                return res.status(200).json({ tx });
+            }
         }
-        res.status(200).json({ hashRecord });
+        res.status(200).json({ tx: hashRecord.tx });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }
