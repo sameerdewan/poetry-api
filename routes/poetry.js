@@ -46,11 +46,10 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
             username: req.jwt.username,
             hash: hashedData,
             contact: getContractData().address,
-            network: req.body.network,
             fileName: req.files.file.name
         });
         await hashRecord.save();
-        res.status(200).json({ hash: hashedData });
+        res.status(200).json({ hashRecord });
         poetryPersist({
             username: req.jwt.username,
             fileName: req.files.file.name,
@@ -61,7 +60,7 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
     }
 });
 
-router.post('/retrieve', async (req, res) => {
+router.post('/retrieve', poetryJWT.middleware, async (req, res) => {
     try {
         const file = req.files.file.tempFilePath;
         const data = await readFile(file);
@@ -72,21 +71,19 @@ router.post('/retrieve', async (req, res) => {
         const hashedData = hash.read();
         const hashRecord = await HashRecord.findOne({ hash: hashedData }).exec();
         if (!hashRecord) {
-            // update to check on chain if we can't find in DB
-            // if we can, we need to re-persist to ourselves
-            // save the hash, username it belongs to, and the file name
-            // send the found doc to the user PRIOR to all of this correction work by the system - 
-            //      because we already validated it exists on the PoetryContract, work can continue
-            //          post sending in the background.
-            const response = await poetryLocate(hashedData);
-            const { tx, error } = response;
+            const response = await poetryLocate({
+                hashedData: new String(hashedData).valueOf(), 
+                username: req.jwt.username, 
+                fileName: req.files.file.name
+            });
+            const { newHashRecord, error } = response;
             if (error) {
                 return res.status(404).json({ error: 'Hash not found' });
             } else {
-                return res.status(200).json({ tx });
+                return res.status(200).json({ hashRecord: newHashRecord });
             }
         }
-        res.status(200).json({ tx: hashRecord.tx });
+        res.status(200).json({ hashRecord });
     } catch (error) {
         res.status(400).json({ error: error.message });
     }

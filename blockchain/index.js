@@ -64,7 +64,7 @@ async function poetryPersist({ username, fileName, hashedData }) {
     }
 }
 
-async function poetryLocate(hash) {
+async function poetryLocate({ hashedData, username, fileName }) {
     try {
         let gasPrice, gasLimit;
         if (process.env.ENV === 'DEVELOPMENT') {
@@ -95,7 +95,21 @@ async function poetryLocate(hash) {
                 reject(error);
             })
             .on('receipt', async (receipt) => {
-                resolve({ tx: receipt.transactionHash });
+                const tx = receipt.transactionHash;
+                const blockNumber = receipt.blockNumber;
+                const block = await web3.eth.getBlock(blockNumber);
+                const timestamp = block.timestamp;
+                const hashRecord = new HashRecord({
+                    username,
+                    hash: hashedData,
+                    tx,
+                    contract: address,
+                    status: 'done',
+                    date: timestamp,
+                    fileName
+                });
+                await hashRecord.save();
+                resolve({ newHashRecord: hashRecord });
             });
         });
     } catch (error) {
