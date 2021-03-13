@@ -5,21 +5,20 @@ const path = require('path');
 class PoetrySystemJWT {
     constructor() {
         if (process.env.ENV === 'DEVELOPMENT') {
-            this.privateKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/private.key'));
-            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/public.key'));
+            this.privateKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/private.key'), 'utf8');
+            this.publicKey = fs.readFileSync(path.resolve(__dirname, '../../../../../appdata/keys/public.pem'), 'utf8');
         }
-        this.settings = {
-            algorithm: 'HS256',
-            expiresIn: "1d"
-        };
+        this.signPayloadGetToken = this.signPayloadGetToken.bind(this);
+        this.verifyToken = this.verifyToken.bind(this);
+        this.middleware = this.middleware.bind(this);
     }
     
     signPayloadGetToken(payload) {
-        return jwt.sign(payload, this.privateKey, this.settings);
+        return jwt.sign(payload, this.privateKey, { algorithm: 'RS256', expiresIn: '1d' });
     }
 
     verifyToken(token) {
-        return jwt.verify(token, this.publicKey);
+        return jwt.verify(token, this.publicKey, { algorithms: ['RS256'] });
     }
 
     middleware(req, res, next) {
@@ -27,12 +26,11 @@ class PoetrySystemJWT {
         const token = authHeader && authHeader.split(' ')[1];
         try {
             req.jwt = this.verifyToken(token);
+            next();
         } catch (error) {
             res.status(403).json({ error: error.message });
         }
-        next();
     }
 }
 
 module.exports = PoetrySystemJWT;
- 
