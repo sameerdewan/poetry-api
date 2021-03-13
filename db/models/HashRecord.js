@@ -31,18 +31,8 @@ const hashRecordSchema = new mongoose.Schema({
         type: mongoose.SchemaTypes.String
     },
     date: {
-        type: mongoose.SchemaTypes.Date,
-        default: (() => {
-            const date = new Date();
-            var hours = date.getHours();
-            var minutes = date.getMinutes();
-            var ampm = hours >= 12 ? 'pm' : 'am';
-            hours = hours % 12;
-            hours = hours ? hours : 12;
-            minutes = minutes < 10 ? '0'+minutes : minutes;
-            var strTime = hours + ':' + minutes + ' ' + ampm;
-            return strTime;
-          })()
+        type: mongoose.SchemaTypes.String,
+        default: new Date()
     },
     fileName: {
         type: mongoose.SchemaTypes.String,

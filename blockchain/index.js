@@ -104,6 +104,7 @@ async function poetryLocate(hash) {
 }
 
 module.exports = {
+    getContractData,
     poetryPersist,
     poetryLocate
 };
