@@ -18,8 +18,6 @@
   },
   "homepage": "https://github.com/sameerdewan/poetry-api#readme",
   "dependencies": {
-    "axios": "^0.21.1",
-    "ethereumjs-tx": "2.1.2",
     "ethers": "5.0.32",
     "express": "4.17.1",
     "express-fileupload": "1.2.1",

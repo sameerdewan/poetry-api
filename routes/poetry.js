@@ -1,6 +1,5 @@
 const router = require('express').Router();
 const fileUpload = require('express-fileupload');
-const axios = require('axios').default;
 const stripe = require('stripe')(process.env.STRIPE_API_KEY);
 const crypto = require('crypto');
 const fs = require('fs');

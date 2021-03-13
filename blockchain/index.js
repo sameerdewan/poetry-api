@@ -1,5 +1,4 @@
 const Web3 = require('web3');
-const Tx = require('ethereumjs-tx').Transaction;
 const ethers = require('ethers').ethers;
 const path = require('path');
 const matic = require('../axios-gas-costs').matic;
