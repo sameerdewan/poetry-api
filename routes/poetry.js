@@ -26,15 +26,15 @@ router.post('/', poetryJWT.middleware, async (req, res) => {
         if (!user) {
             res.sendStatus(404);
         }
-        // assert.notDeepEqual(user.validated, false, 'User is not validated');
-        // assert.notDeepEqual(user.customerId, null, 'User does not have a customerId');
-        // assert.notDeepEqual(user.subscription, null, 'User does not have an active subscription');
-        // assert.notDeepEqual(user.subscriptionId, null, 'User does not have an active subscription id');
-        // const stripeSubscription = await stripe.subscriptions.retrieve(user.subscriptionId);
-        // const productId = stripeSubscription.items.data[0].price.product;
-        // const stripeProduct = await stripe.products.retrieve(productId);
-        // const { maxRequests } = Number(stripeProduct.metaData);
-        // assert.notDeepEqual(user.monthToDatePings < maxRequests, true, `User has reached monthly ping limit: ${maxRequests}`);
+        assert.notDeepEqual(user.validated, false, 'User is not validated');
+        assert.notDeepEqual(user.customerId, null, 'User does not have a customerId');
+        assert.notDeepEqual(user.subscription, null, 'User does not have an active subscription');
+        assert.notDeepEqual(user.subscriptionId, null, 'User does not have an active subscription id');
+        const stripeSubscription = await stripe.subscriptions.retrieve(user.subscriptionId);
+        const productId = stripeSubscription.items.data[0].price.product;
+        const stripeProduct = await stripe.products.retrieve(productId);
+        const { maxRequests } = Number(stripeProduct.metaData);
+        assert.notDeepEqual(user.monthToDatePings < maxRequests, true, `User has reached monthly ping limit: ${maxRequests}`);
         const file = req.files.file.tempFilePath;
         const data = await readFile(file);
         const hash = crypto.createHash('sha256');
